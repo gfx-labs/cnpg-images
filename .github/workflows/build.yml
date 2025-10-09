@@ -3,7 +3,7 @@ name: Continuous Delivery
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 env:
@@ -52,8 +52,8 @@ jobs:
         for tag in $(jq -r '.[]' <<< "${TAGS}")
         do
           RESULT="${RESULT},${IMAGE_STAGING}:${tag}"
-          # If we are running the pipeline in the main branch images are pushed in both -testing and PROD repo
-          if [ "${GITHUB_REF#refs/heads/}" == main ]
+          # If we are running the pipeline in the master branch images are pushed in both -testing and PROD repo
+          if [ "${GITHUB_REF#refs/heads/}" == master ]
           then
             RESULT="${RESULT},${IMAGE_RELEASE}:${tag}"
           fi
@@ -70,13 +70,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    # When publishing new images from main, we should not overwrite an existing
+    # When publishing new images from master, we should not overwrite an existing
     # tag in order to guarantee the tag's SHA digest consistency.
     - name: Verify primary tag is not overwritten
       run: |
         echo "MISSING_TAG=false" >> $GITHUB_ENV
-        # if we are not on the main branch, always push
-        if [ "${GITHUB_REF#refs/heads/}" != main ]; then
+        # if we are not on the master branch, always push
+        if [ "${GITHUB_REF#refs/heads/}" != master ]; then
             echo "MISSING_TAG=true" >> $GITHUB_ENV
             exit 0
         fi
