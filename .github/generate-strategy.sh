@@ -68,8 +68,8 @@ check_platform_support() {
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}/..")")"
 BASE_DIRECTORY="$(pwd)"
 
-# Retrieve the PostgreSQL versions for TimescaleDB-PostGIS
-cd ${BASE_DIRECTORY}/TimescaleDB-PostGIS
+# Retrieve the PostgreSQL versions for cinnamon
+cd ${BASE_DIRECTORY}/cinnamon
 for version in */; do
 	[[ $version == src/ ]] && continue
 	postgis_versions+=("$version")
@@ -132,7 +132,7 @@ for version in "${postgis_versions[@]}"; do
 
 	# Build the json entry
 	entries+=(
-		"{\"name\": \"TimescaleDB-PostGIS ${version}-${postgisVersion}\", \"platforms\": \"$platforms\", \"dir\": \"TimescaleDB-PostGIS/$version\", \"file\": \"TimescaleDB-PostGIS/$version/Dockerfile\", \"version\": \"$version\", \"tags\": [\"$(join "\", \"" "${versionAliases[@]}")\"], \"fullTag\": \"${fullTag}\"}"
+		"{\"name\": \"cinnamon ${version}-${postgisVersion}\", \"platforms\": \"$platforms\", \"dir\": \"cinnamon/$version\", \"file\": \"cinnamon/$version/Dockerfile\", \"version\": \"$version\", \"tags\": [\"$(join "\", \"" "${versionAliases[@]}")\"], \"fullTag\": \"${fullTag}\"}"
 	)
 done
 

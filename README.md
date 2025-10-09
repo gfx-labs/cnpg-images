@@ -31,13 +31,13 @@ Images are available via the
 
 ## How to use them
 
-The following example shows how you can easily create a new PostgreSQL 14
-cluster with TimescaleDB 2.10 and PostGIS 3.3 in it. All you have to do is set the `imageName`
+The following example shows how you can easily create a new PostgreSQL 16
+cluster with TimescaleDB and PostGIS in it. All you have to do is set the `imageName`
 accordingly. Please look at the registry for a list of available images
 and select the one you need.
 
 Create a YAML manifest. For example, you can put the YAML below into a file
-named `timescaledb-postgis.yaml` (any name is fine). (Please refer to
+named `cinnamon-cluster.yaml` (any name is fine). (Please refer to
 [CloudNativePG](https://cloudnative-pg.io/docs) for details on the API):
 
 ```yaml
@@ -47,7 +47,7 @@ metadata:
   name: cluster-example
 spec:
   instances: 1
-  imageName: ghcr.io/imusmanmalik/timescaledb-postgis:14-3.3
+  imageName: ghcr.io/gfx-labs/cnpg-cinnamon:16
   bootstrap:
     initdb:
       postInitTemplateSQL:
@@ -63,7 +63,7 @@ spec:
     size: 1Gi
 ```
 
-Then run `kubectl apply -f timescaledb-postgis.yaml`.
+Then run `kubectl apply -f cinnamon-cluster.yaml`.
 
 When the cluster is up, run the following command to verify the version of
 PostGIS that is available in the system, by connecting to the `app` database:
