@@ -41,12 +41,12 @@ jobs:
           git status
           git diff
       - name: Temporarily disable "include administrators" branch protection
-        if: ${{ always() && github.ref == 'refs/heads/main' }}
+        if: ${{ always() && github.ref == 'refs/heads/master' }}
         id: disable_include_admins
         uses: benjefferies/branch-protection-bot@v1.1.2
         with:
           access_token: ${{ secrets.REPO_GHA_PAT }}
-          branch: main
+          branch: master
           enforce_admins: false
       - uses: EndBug/add-and-commit@v9
         with:
@@ -55,8 +55,8 @@ jobs:
           message: 'chore: Daily Update'
       - name: Enable "include administrators" branch protection
         uses: benjefferies/branch-protection-bot@v1.1.2
-        if: ${{ always() && github.ref == 'refs/heads/main' }}
+        if: ${{ always() && github.ref == 'refs/heads/master' }}
         with:
           access_token: ${{ secrets.REPO_GHA_PAT }}
-          branch: main
+          branch: master
           enforce_admins: ${{ steps.disable_include_admins.outputs.initial_status }}
