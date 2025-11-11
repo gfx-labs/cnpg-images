@@ -29,12 +29,13 @@ COPY requirements.txt /
 
 # Install timescaledb 2.x
 RUN apt-get update \
-	&& apt-get install -y lsb-release wget \
-	&& echo "deb https://packagecloud.io/timescale/timescaledb/debian/ $(lsb_release -c -s) main" | tee /etc/apt/sources.list.d/timescaledb.list \
-	&& wget --quiet -O - https://packagecloud.io/timescale/timescaledb/gpgkey | apt-key add - \
+	&& apt-get install -y lsb-release wget gnupg \
+	&& mkdir -p /etc/apt/keyrings \
+	&& wget --quiet -O - https://packagecloud.io/timescale/timescaledb/gpgkey | gpg --dearmor -o /etc/apt/keyrings/timescaledb.gpg \
+	&& echo "deb [signed-by=/etc/apt/keyrings/timescaledb.gpg] https://packagecloud.io/timescale/timescaledb/debian/ $(lsb_release -c -s) main" | tee /etc/apt/sources.list.d/timescaledb.list \
 	&& apt-get update \
 	&& apt-get install -y "timescaledb-2-postgresql-${PG_MAJOR}" "timescaledb-toolkit-postgresql-${PG_MAJOR}" \
-	&& apt-get remove -y lsb-release wget \
+	&& apt-get remove -y lsb-release wget gnupg \
 	&& 	rm -fr /tmp/* \
 	&& 	rm -rf /var/lib/apt/lists/*
 
