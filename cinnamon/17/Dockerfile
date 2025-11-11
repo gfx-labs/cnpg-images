@@ -19,7 +19,7 @@ FROM postgis/postgis:17-3.5
 # Do not split the description, otherwise we will see a blank space in the labels
 LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 	version="${PG_VERSION}" \
-	release="78" \
+	release="79" \
 	summary="PostgreSQL + TimescaleDB + PostGIS Container images." \
 	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres 17-3.5."
 
@@ -54,14 +54,15 @@ RUN set -xe; \
 RUN set -xe; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
-	python3-pip \
+	curl \
 	python3-psycopg2 \
-	python3-setuptools \
 	; \
-	pip3 install --upgrade pip; \
+	curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	. $HOME/.cargo/env; \
 	# TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
-	pip3 install --no-deps -r requirements.txt; \
-	rm -rf /var/lib/apt/lists/*;
+	uv pip install --system --no-deps -r requirements.txt; \
+	rm -rf /var/lib/apt/lists/*; \
+	rm -rf $HOME/.cargo;
 
 # Change the uid of postgres to 26
 RUN usermod -u 26 postgres

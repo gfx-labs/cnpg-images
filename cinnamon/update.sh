@@ -44,7 +44,7 @@ fi
 versions=("${versions[@]%/}")
 
 # Update this everytime a new major release of PostgreSQL is available
-POSTGRESQL_LATEST_MAJOR_RELEASE=17
+POSTGRESQL_LATEST_MAJOR_RELEASE=18
 
 # Get the last postgres base image tag and update time
 fetch_postgres_image_version() {
@@ -185,7 +185,7 @@ update_requirements() {
 
 	# This will take the requirements.in file and generate a file
 	# requirements.txt with the hashes for the required packages
-	pip-compile --generate-hashes 2>/dev/null
+	uv pip compile --generate-hashes requirements.in -o requirements.txt
 
 	# Removes psycopg from the list of packages to install
 	sed -i '/psycopg/{:a;N;/barman/!ba};/via barman/d' requirements.txt

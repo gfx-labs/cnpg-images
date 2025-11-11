@@ -46,7 +46,7 @@ The repository uses a sophisticated update mechanism:
    - Increments `IMAGE_RELEASE_VERSION` when components change
    - Resets to version 1 when base PostGIS image changes
    - Generates Dockerfiles from templates
-   - Updates Python requirements with `pip-compile --generate-hashes`
+   - Updates Python requirements with `uv pip compile --generate-hashes`
 
 3. **Build Strategy** (`.github/generate-strategy.sh`):
    - Generates a JSON matrix for GitHub Actions
@@ -99,12 +99,12 @@ docker buildx build --platform linux/amd64,linux/arm64 -t cnpg-cinnamon:16-test 
 
 ### Updating Python Dependencies
 ```bash
-# Install pip-tools
-pip3 install --upgrade pip-tools
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Regenerate requirements.txt from requirements.in
 cd cinnamon
-pip-compile --generate-hashes requirements.in
+uv pip compile --generate-hashes requirements.in -o requirements.txt
 ```
 
 ## Key Architectural Decisions

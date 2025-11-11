@@ -14,16 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM postgis/postgis:%%POSTGIS_IMAGE_VERSION%%
+FROM postgis/postgis:18-3.6
 
 # Do not split the description, otherwise we will see a blank space in the labels
 LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 	version="${PG_VERSION}" \
-	release="%%IMAGE_RELEASE_VERSION%%" \
+	release="1" \
 	summary="PostgreSQL + TimescaleDB + PostGIS Container images." \
-	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres %%POSTGIS_IMAGE_VERSION%%."
+	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres 18-3.6."
 
-LABEL org.opencontainers.image.description="This Docker image contains PostgreSQL, PostGIS, TimescaleDB and Barman Cloud based on Postgres %%POSTGIS_IMAGE_VERSION%%."
+LABEL org.opencontainers.image.description="This Docker image contains PostgreSQL, PostGIS, TimescaleDB and Barman Cloud based on Postgres 18-3.6."
 
 COPY requirements.txt /
 
