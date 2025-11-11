@@ -25,6 +25,9 @@ LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 
 LABEL org.opencontainers.image.description="This Docker image contains PostgreSQL, PostGIS, TimescaleDB and Barman Cloud based on Postgres %%POSTGIS_IMAGE_VERSION%%."
 
+# Copy uv binary from official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 COPY requirements.txt /
 
 # Install timescaledb 2.x
@@ -55,15 +58,11 @@ RUN set -xe; \
 RUN set -xe; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
-	curl \
 	python3-psycopg2 \
 	; \
-	curl -LsSf https://astral.sh/uv/install.sh | sh; \
-	. $HOME/.cargo/env; \
 	# TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
 	uv pip install --system --no-deps -r requirements.txt; \
-	rm -rf /var/lib/apt/lists/*; \
-	rm -rf $HOME/.cargo;
+	rm -rf /var/lib/apt/lists/*;
 
 # Change the uid of postgres to 26
 RUN usermod -u 26 postgres
