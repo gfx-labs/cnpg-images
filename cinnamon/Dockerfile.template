@@ -61,7 +61,7 @@ RUN set -xe; \
 	python3-psycopg2 \
 	; \
 	# TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
-	uv pip install --break-system-packages --no-deps -r requirements.txt; \
+	uv pip install --system --break-system-packages --no-deps -r requirements.txt; \
 	rm -rf /var/lib/apt/lists/*;
 
 # Change the uid of postgres to 26
