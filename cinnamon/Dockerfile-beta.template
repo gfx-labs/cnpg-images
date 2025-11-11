@@ -44,6 +44,7 @@ RUN set -xe; \
 RUN set -xe; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
+    python3-distutils \
     python3-psycopg2 \
     ; \
     # TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
