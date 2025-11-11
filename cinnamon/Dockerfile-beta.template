@@ -48,7 +48,8 @@ RUN set -xe; \
     ; \
     # TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
     uv pip install --system --break-system-packages --no-deps -r requirements.txt; \
-    rm -rf /var/lib/apt/lists/*;
+    rm -rf /var/lib/apt/lists/*; \
+    rm -rf /root/.cache;
 
 # Change the uid of postgres to 26
 RUN usermod -u 26 postgres
