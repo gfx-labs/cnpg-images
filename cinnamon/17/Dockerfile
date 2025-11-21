@@ -19,7 +19,7 @@ FROM postgis/postgis:17-3.5
 # Do not split the description, otherwise we will see a blank space in the labels
 LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 	version="${PG_VERSION}" \
-	release="79" \
+	release="81" \
 	summary="PostgreSQL + TimescaleDB + PostGIS Container images." \
 	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres 17-3.5."
 
@@ -39,7 +39,7 @@ RUN apt-get update \
 	&& 	rm -fr /tmp/* \
 	&& 	rm -rf /var/lib/apt/lists/*
 
-# Install pgaudit
+# Install pgaudit and additional tools
 RUN set -xe; \
 	apt-get update; \
 	apt-mark hold "postgresql-${PG_MAJOR}" "postgresql-client-${PG_MAJOR}" postgresql-client-common postgresql-common; \
@@ -47,6 +47,8 @@ RUN set -xe; \
 	"postgresql-${PG_MAJOR}-pgaudit" \
 	"postgresql-${PG_MAJOR}-pg-failover-slots" \
 	"postgresql-${PG_MAJOR}-pgrouting" \
+	pgcli \
+	pgbadger \
 	; \
 	rm -fr /tmp/* ; \
 	rm -rf /var/lib/apt/lists/*;
@@ -60,7 +62,9 @@ RUN set -xe; \
 	python3-setuptools \
 	; \
 	# TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
-	pip3 install --break-system-packages --no-deps -r requirements.txt; \
+	# Filter out typing-extensions which conflicts with Debian system package
+	grep -v "^typing-extensions==" requirements.txt > /tmp/requirements-filtered.txt; \
+	pip3 install --break-system-packages --no-deps -r /tmp/requirements-filtered.txt; \
 	rm -rf /var/lib/apt/lists/*;
 
 # Change the uid of postgres to 26
