@@ -19,7 +19,7 @@ FROM postgis/postgis:18-3.6
 # Do not split the description, otherwise we will see a blank space in the labels
 LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 	version="${PG_VERSION}" \
-	release="3" \
+	release="4" \
 	summary="PostgreSQL + TimescaleDB + PostGIS Container images." \
 	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres 18-3.6."
 
@@ -39,19 +39,38 @@ RUN apt-get update \
 	&& 	rm -fr /tmp/* \
 	&& 	rm -rf /var/lib/apt/lists/*
 
-# Install pgaudit and additional tools
+# Install PostgreSQL extensions and tools
 RUN set -xe; \
 	apt-get update; \
 	apt-mark hold "postgresql-${PG_MAJOR}" "postgresql-client-${PG_MAJOR}" postgresql-client-common postgresql-common; \
 	apt-get install -y --no-install-recommends \
 	"postgresql-${PG_MAJOR}-pgaudit" \
 	"postgresql-${PG_MAJOR}-pg-failover-slots" \
-	"postgresql-${PG_MAJOR}-pgrouting" \
-	pgcli \
+	"postgresql-${PG_MAJOR}-repack" \
+	"postgresql-${PG_MAJOR}-pgvector" \
+	"postgresql-${PG_MAJOR}-wal2json" \
+	"postgresql-${PG_MAJOR}-hypopg" \
+	"postgresql-${PG_MAJOR}-partman" \
+	"postgresql-${PG_MAJOR}-plpgsql-check" \
+	"postgresql-${PG_MAJOR}-hll" \
+	"postgresql-${PG_MAJOR}-first-last-agg" \
+	"postgresql-${PG_MAJOR}-extra-window-functions" \
+	"postgresql-${PG_MAJOR}-decoderbufs" \
+	"postgresql-${PG_MAJOR}-roaringbitmap" \
+	"postgresql-${PG_MAJOR}-dirtyread" \
+	"postgresql-${PG_MAJOR}-plproxy" \
+	"postgresql-${PG_MAJOR}-pldebugger" \
+	"postgresql-${PG_MAJOR}-pglogical" \
+	"postgresql-${PG_MAJOR}-pg-checksums" \
+	"postgresql-${PG_MAJOR}-pgq-node" \
+	"postgresql-${PG_MAJOR}-pllua" \
 	pgbadger \
 	; \
 	rm -fr /tmp/* ; \
 	rm -rf /var/lib/apt/lists/*;
+
+# We need to break the system packages to install barman-cloud in bookworm and later
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Install barman-cloud
 RUN set -xe; \
@@ -64,8 +83,16 @@ RUN set -xe; \
 	# TODO: Remove --no-deps once https://github.com/pypa/pip/issues/9644 is solved
 	# Filter out typing-extensions which conflicts with Debian system package
 	grep -v "^typing-extensions==" requirements.txt > /tmp/requirements-filtered.txt; \
-	pip3 install --break-system-packages --no-deps -r /tmp/requirements-filtered.txt; \
+	pip3 install --no-deps -r /tmp/requirements-filtered.txt; \
 	rm -rf /var/lib/apt/lists/*;
+
+# Install pgcli for PostgreSQL 18+
+RUN set -xe; \
+	if [ "${PG_MAJOR}" -ge 18 ]; then \
+		apt-get update; \
+		apt-get install -y --no-install-recommends pgcli; \
+		rm -rf /var/lib/apt/lists/*; \
+	fi
 
 # Change the uid of postgres to 26
 RUN usermod -u 26 postgres
