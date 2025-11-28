@@ -13,6 +13,8 @@ The images are built on top of the PostGIS Debian images and include:
 - PGAudit (audit logging extension)
 - pg-failover-slots
 - pgrouting
+- pgbadger (PostgreSQL log analyzer)
+- pgcli (interactive PostgreSQL CLI - PostgreSQL 18+ only)
 
 Images are published to GitHub Container Registry at `ghcr.io/gfx-labs/cnpg-cinnamon`.
 
@@ -20,7 +22,7 @@ Images are published to GitHub Container Registry at `ghcr.io/gfx-labs/cnpg-cinn
 
 ### Version Management
 
-Each PostgreSQL version (16-17) has its own directory under `cinnamon/`:
+Each PostgreSQL version (16-18) has its own directory under `cinnamon/`:
 - `cinnamon/<version>/` - Contains the Dockerfile and metadata for each PG version
 - `cinnamon/<version>/.versions.json` - Tracks component versions and release numbers
 
@@ -36,10 +38,10 @@ The repository uses a sophisticated update mechanism:
 
 1. **Daily Updates** (`.github/workflows/update.yml`):
    - Runs daily at midnight or via manual dispatch
-   - Executes `cinnamon/update.sh` to check for upstream changes
+   - Executes `cinnamon/update.py` to check for upstream changes
    - Updates are committed automatically to the main branch
 
-2. **Update Script** (`cinnamon/update.sh`):
+2. **Update Script** (`cinnamon/update.py`):
    - Queries Docker Hub API for latest PostGIS base images
    - Checks PyPI for latest Barman version
    - Compares timestamps and versions in `.versions.json`
@@ -75,10 +77,10 @@ The Continuous Delivery workflow (`.github/workflows/build.yml`):
 ### Running the Update Script
 ```bash
 # Update all versions
-./cinnamon/update.sh
+python3 cinnamon/update.py
 
 # Update specific version(s)
-./cinnamon/update.sh 16 17
+python3 cinnamon/update.py 16 17
 ```
 
 ### Testing Build Strategy Generation
@@ -111,11 +113,11 @@ uv pip compile --generate-hashes requirements.in -o requirements.txt
 
 ### Template-Based Dockerfile Generation
 
-Dockerfiles are generated from templates (`Dockerfile.template` and `Dockerfile-beta.template`):
+Dockerfiles are generated from the template `Dockerfile.template`:
 - `%%POSTGIS_IMAGE_VERSION%%` - Replaced with PostGIS base image tag
 - `%%IMAGE_RELEASE_VERSION%%` - Replaced with incremental release number
 
-The update script copies files from `src/` and processes templates for each version directory.
+The update script copies files from `src/` and processes templates for each version directory. The template includes conditional logic to handle differences between PostgreSQL versions (e.g., pgcli installation only for PG 18+).
 
 ### Multi-Platform Support Detection
 
@@ -174,9 +176,16 @@ The `shared_preload_libraries` setting is required for TimescaleDB to function p
 
 ### PostgreSQL Version Support
 
-- Currently supports PostgreSQL 16 and 17
-- Update `POSTGRESQL_LATEST_MAJOR_RELEASE` in `update.sh` when new major versions are released
-- Beta versions (>17) use `Dockerfile-beta.template`
+- Currently supports PostgreSQL 16, 17, and 18
+- Update `POSTGRESQL_LATEST_MAJOR_RELEASE` in `update.py` when new major versions are released
+- PostgreSQL 18 uses Debian Trixie base image (vs. Bullseye for 16/17)
+
+### Tool Availability
+
+- **pgbadger**: Available on all PostgreSQL versions (16, 17, 18)
+- **pgcli**: Only available on PostgreSQL 18+ due to Debian package repository availability
+  - PostgreSQL 16/17 use Debian Bullseye (pgcli not available in repos)
+  - PostgreSQL 18 uses Debian Trixie (pgcli 4.3.0 available in repos)
 
 ### User ID
 
