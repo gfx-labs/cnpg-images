@@ -64,6 +64,7 @@ RUN set -xe; \
 	"postgresql-${PG_MAJOR}-pg-checksums" \
 	"postgresql-${PG_MAJOR}-pgq-node" \
 	"postgresql-${PG_MAJOR}-pllua" \
+	"postgresql-${PG_MAJOR}-pg-stat-kcache" \
 	pgbadger \
 	; \
 	rm -fr /tmp/* ; \

@@ -19,7 +19,7 @@ FROM postgis/postgis:18-3.6
 # Do not split the description, otherwise we will see a blank space in the labels
 LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 	version="${PG_VERSION}" \
-	release="4" \
+	release="5" \
 	summary="PostgreSQL + TimescaleDB + PostGIS Container images." \
 	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres 18-3.6."
 
@@ -64,6 +64,7 @@ RUN set -xe; \
 	"postgresql-${PG_MAJOR}-pg-checksums" \
 	"postgresql-${PG_MAJOR}-pgq-node" \
 	"postgresql-${PG_MAJOR}-pllua" \
+	"postgresql-${PG_MAJOR}-pg-stat-kcache" \
 	pgbadger \
 	; \
 	rm -fr /tmp/* ; \
