@@ -27,17 +27,22 @@ LABEL org.opencontainers.image.description="This Docker image contains PostgreSQ
 
 COPY requirements.txt /
 
-# Install timescaledb 2.x
+# Install timescaledb %%TIMESCALEDB_VERSION%%
 RUN apt-get update \
 	&& apt-get install -y lsb-release wget gnupg \
 	&& mkdir -p /etc/apt/keyrings \
 	&& wget --quiet -O - https://packagecloud.io/timescale/timescaledb/gpgkey | gpg --dearmor -o /etc/apt/keyrings/timescaledb.gpg \
 	&& echo "deb [signed-by=/etc/apt/keyrings/timescaledb.gpg] https://packagecloud.io/timescale/timescaledb/debian/ $(lsb_release -c -s) main" | tee /etc/apt/sources.list.d/timescaledb.list \
 	&& apt-get update \
-	&& apt-get install -y "timescaledb-2-postgresql-${PG_MAJOR}" "timescaledb-toolkit-postgresql-${PG_MAJOR}" \
+	&& apt-get install -y "timescaledb-2-postgresql-${PG_MAJOR}=%%TIMESCALEDB_VERSION%%~debian$(cat /etc/debian_version | cut -d. -f1)*" "timescaledb-toolkit-postgresql-${PG_MAJOR}" \
 	&& apt-get remove -y lsb-release wget gnupg \
-	&& 	rm -fr /tmp/* \
-	&& 	rm -rf /var/lib/apt/lists/*
+	&& rm -fr /tmp/* \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& INSTALLED_VERSION=$(dpkg-query -W -f='${Version}' "timescaledb-2-postgresql-${PG_MAJOR}" | cut -d'~' -f1) \
+	&& if [ "$INSTALLED_VERSION" != "%%TIMESCALEDB_VERSION%%" ]; then \
+		echo "ERROR: TimescaleDB version mismatch! Expected %%TIMESCALEDB_VERSION%%, got $INSTALLED_VERSION"; \
+		exit 1; \
+	fi
 
 # Install PostgreSQL extensions and tools
 RUN set -xe; \

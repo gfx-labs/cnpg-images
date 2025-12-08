@@ -72,6 +72,24 @@ def get_latest_barman_version() -> str:
     return "3.16.2"
 
 
+def get_timescaledb_version(version_file: Path) -> str:
+    """
+    Get the TimescaleDB version from the version file.
+    TimescaleDB version is manually managed - update .versions.json to change it.
+
+    Args:
+        version_file: Path to .versions.json
+
+    Returns:
+        TimescaleDB version string
+    """
+    if version_file.exists():
+        with open(version_file, 'r') as f:
+            data = json.load(f)
+        return data.get("TIMESCALEDB_VERSION", "")
+    return ""
+
+
 def record_version(version_file: Path, component: str, component_version: str | int):
     """
     Update a component version in the version file.
@@ -121,6 +139,11 @@ def generate_postgres(version: str):
         print("❌ Unable to retrieve latest barman-cli-cloud version")
         sys.exit(1)
 
+    # Get TimescaleDB version (manually managed in .versions.json)
+    timescaledb_version = get_timescaledb_version(version_file)
+    if timescaledb_version:
+        print(f"  → Using TimescaleDB version: {timescaledb_version}")
+
     # Handle existing or new version file
     if version_file.exists():
         print(f"  → Reading existing version file...")
@@ -147,7 +170,7 @@ def generate_postgres(version: str):
         print(f"  → Copying source files...")
         copy_src_files(version)
         print(f"  → Generating Dockerfile...")
-        generate_dockerfile(version, postgis_image_version, image_release_version)
+        generate_dockerfile(version, postgis_image_version, image_release_version, timescaledb_version)
         print(f"✅ Completed PostgreSQL {version}\n")
         return
 
@@ -181,7 +204,7 @@ def generate_postgres(version: str):
     print(f"  → Copying source files...")
     copy_src_files(version)
     print(f"  → Generating Dockerfile (release version: {image_release_version})...")
-    generate_dockerfile(version, postgis_image_version, image_release_version)
+    generate_dockerfile(version, postgis_image_version, image_release_version, timescaledb_version)
     print(f"✅ Completed PostgreSQL {version}\n")
 
 
@@ -201,7 +224,7 @@ def copy_src_files(version: str):
             shutil.copytree(item, dest)
 
 
-def generate_dockerfile(version: str, postgis_image_version: str, image_release_version: int):
+def generate_dockerfile(version: str, postgis_image_version: str, image_release_version: int, timescaledb_version: str):
     """
     Generate Dockerfile from template.
 
@@ -209,6 +232,7 @@ def generate_dockerfile(version: str, postgis_image_version: str, image_release_
         version: PostgreSQL major version
         postgis_image_version: PostGIS image tag
         image_release_version: Release version number
+        timescaledb_version: TimescaleDB version to verify
     """
     template_file = Path("Dockerfile.template")
     output_file = Path(version) / "Dockerfile"
@@ -219,6 +243,7 @@ def generate_dockerfile(version: str, postgis_image_version: str, image_release_
     # Replace placeholders
     content = template_content.replace("%%POSTGIS_IMAGE_VERSION%%", postgis_image_version)
     content = content.replace("%%IMAGE_RELEASE_VERSION%%", str(image_release_version))
+    content = content.replace("%%TIMESCALEDB_VERSION%%", timescaledb_version)
 
     with open(output_file, 'w') as f:
         f.write(content)

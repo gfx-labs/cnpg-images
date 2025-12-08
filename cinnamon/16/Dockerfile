@@ -19,7 +19,7 @@ FROM postgis/postgis:16-3.5
 # Do not split the description, otherwise we will see a blank space in the labels
 LABEL name="PostgreSQL + TimescaleDB + PostGIS Container Images" \
 	version="${PG_VERSION}" \
-	release="83" \
+	release="85" \
 	summary="PostgreSQL + TimescaleDB + PostGIS Container images." \
 	description="This Docker image contains PostgreSQL, TimescaleDB, PostGIS and Barman Cloud based on Postgres 16-3.5."
 
@@ -27,17 +27,22 @@ LABEL org.opencontainers.image.description="This Docker image contains PostgreSQ
 
 COPY requirements.txt /
 
-# Install timescaledb 2.x
+# Install timescaledb 2.24.0
 RUN apt-get update \
 	&& apt-get install -y lsb-release wget gnupg \
 	&& mkdir -p /etc/apt/keyrings \
 	&& wget --quiet -O - https://packagecloud.io/timescale/timescaledb/gpgkey | gpg --dearmor -o /etc/apt/keyrings/timescaledb.gpg \
 	&& echo "deb [signed-by=/etc/apt/keyrings/timescaledb.gpg] https://packagecloud.io/timescale/timescaledb/debian/ $(lsb_release -c -s) main" | tee /etc/apt/sources.list.d/timescaledb.list \
 	&& apt-get update \
-	&& apt-get install -y "timescaledb-2-postgresql-${PG_MAJOR}" "timescaledb-toolkit-postgresql-${PG_MAJOR}" \
+	&& apt-get install -y "timescaledb-2-postgresql-${PG_MAJOR}=2.24.0~debian$(cat /etc/debian_version | cut -d. -f1)*" "timescaledb-toolkit-postgresql-${PG_MAJOR}" \
 	&& apt-get remove -y lsb-release wget gnupg \
-	&& 	rm -fr /tmp/* \
-	&& 	rm -rf /var/lib/apt/lists/*
+	&& rm -fr /tmp/* \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& INSTALLED_VERSION=$(dpkg-query -W -f='${Version}' "timescaledb-2-postgresql-${PG_MAJOR}" | cut -d'~' -f1) \
+	&& if [ "$INSTALLED_VERSION" != "2.24.0" ]; then \
+		echo "ERROR: TimescaleDB version mismatch! Expected 2.24.0, got $INSTALLED_VERSION"; \
+		exit 1; \
+	fi
 
 # Install PostgreSQL extensions and tools
 RUN set -xe; \
